@@ -41,6 +41,8 @@ Usage examples:
     python %(prog)s -i usb -o u36_output.bin
     python %(prog)s -i i2c --i2c-bus 1 --i2c-address 0x67 -o u36_output.bin
     python %(prog)s -i spi --spi-bus 0 --spi-device 0 -o u36_output.bin
+    python %(prog)s -i rpc --hostname localhost -o u36_output.bin
+    python %(prog)s -i rpc --hostname 192.168.x.x -o u36_output.bin
 
 Exit status codes:
     0 : Success
@@ -54,11 +56,13 @@ Exit status codes:
     output_group = parser.add_argument_group('Output Options')
 
     # Add arguments to their respective groups
-    interface_group.add_argument("-i", "--interface", help='Comms interface to communicate with aXiom', choices=["spi", "i2c", "usb"], required=True)
+    interface_group.add_argument("-i", "--interface", help='Comms interface to communicate with aXiom', choices=["spi", "i2c", "usb", "rpc"], required=True)
     interface_group.add_argument("--i2c-bus", help='I2C bus number, as per `/dev/i2c-<bus>`', metavar='BUS', type=int)
     interface_group.add_argument("--i2c-address", help='I2C address, either 0x66 or 0x67', choices=["0x66", "0x67"], metavar='ADDR')
     interface_group.add_argument("--spi-bus", help='SPI bus number, as per `/dev/spi<bus>.<device>`', metavar='BUS', type=int)
     interface_group.add_argument("--spi-device", help='SPI device for CS, as per `/dev/spi<bus>.<device>`', metavar='DEV', type=int)
+    interface_group.add_argument("--hostname", help='Host running the aXiom RPC serer', metavar='HOSTNAME', type=str, default="localhost")
+    interface_group.add_argument("--port", help='Port number to use when connecting to RPC server', metavar='PORT', type=int, default=29466)
 
     output_group.add_argument("-o", "--output", help='Output file for the u36 Factory Calibration Data', metavar='DATA_FILE', required=False, type=str, default='')
 
@@ -81,6 +85,10 @@ Exit status codes:
     if args.interface == "usb":
         from axiom_tc.USB_Comms import USB_Comms
         comms = USB_Comms()
+
+    if args.interface == "rpc":
+        from axiom_tc.RPC_Comms import RPC_Comms
+        comms = RPC_Comms(args.hostname, args.port)
 
     # Initialise comms with axiom 
     axiom = axiom(comms)

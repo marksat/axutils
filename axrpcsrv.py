@@ -16,10 +16,12 @@ class AxiomRPCService(rpyc.Service):
         self.__axiom = axiom
 
     def exposed_read_page(self, target_address, length):
+        #print(f"Read: {target_address:04X}, length: {length}")
         return self.comms.read_page(target_address, length)
 
     def exposed_write_page(self, target_address, length, payload):
-        return self.comms_write_page(target_address, length, payload)
+        #print(f"Write: {target_address:04X}, length: {length}")
+        self.comms.write_page(target_address, length, list(payload))
     
     def exposed_close(self):
         pass

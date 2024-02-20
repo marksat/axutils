@@ -186,6 +186,9 @@ Usage examples:
     python %(prog)s -i spi --spi-bus 0 --spi-device 0 -f ax80a_3D_rt_r040807_prod.axfw
     python %(prog)s -i usb -f ax80a_3D_rt_r040807_prod.axfw --info
     python %(prog)s -i usb -f ax80a_3D_rt_r040807_prod.axfw --force
+    python %(prog)s -i rpc -f ax80a_3D_rt_r040807_prod.axfw
+    python %(prog)s -i rpc --hostname localhost -f ax80a_3D_rt_r040807_prod.axfw
+    python %(prog)s -i rpc --hostname 192.168.x.x -f ax80a_3D_rt_r040807_prod.axfw
     python %(prog)s -i usb --info
 
 Exit status codes:
@@ -207,11 +210,13 @@ Exit status codes:
     config_group = parser.add_argument_group('Configuration Options')
 
     # Add arguments to their respective groups
-    interface_group.add_argument("-i", "--interface", help='Comms interface to communicate with aXiom', choices=["spi", "i2c", "usb"], required=True)
+    interface_group.add_argument("-i", "--interface", help='Comms interface to communicate with aXiom', choices=["spi", "i2c", "usb", "rpc"], required=True)
     interface_group.add_argument("--i2c-bus", help='I2C bus number, as per `/dev/i2c-<bus>`', metavar='BUS', type=int)
     interface_group.add_argument("--i2c-address", help='I2C address, either 0x66 or 0x67', choices=["0x66", "0x67"], metavar='ADDR')
     interface_group.add_argument("--spi-bus", help='SPI bus number, as per `/dev/spi<bus>.<device>`', metavar='BUS', type=int)
     interface_group.add_argument("--spi-device", help='SPI device for CS, as per `/dev/spi<bus>.<device>`', metavar='DEV', type=int)
+    interface_group.add_argument("--hostname", help='Host running the aXiom RPC serer', metavar='HOSTNAME', type=str, default="localhost")
+    interface_group.add_argument("--port", help='Port number to use when connecting to RPC server', metavar='PORT', type=int, default=29466)
 
     config_group.add_argument("-f", "--file", help='aXiom firmware file (.alc or .axfw format)', metavar='FIRMWARE_FILE')
     config_group.add_argument("--info", help='Displays the firmware information of the connected aXiom device and the firmware files (.axfw only)', action="store_true")
@@ -236,6 +241,10 @@ Exit status codes:
     if args.interface == "usb":
         from axiom_tc.USB_Comms import USB_Comms
         comms = USB_Comms()
+
+    if args.interface == "rpc":
+        from axiom_tc.RPC_Comms import RPC_Comms
+        comms = RPC_Comms(args.hostname, args.port)
 
     # Initialise comms with axiom 
     axiom = axiom(comms)
